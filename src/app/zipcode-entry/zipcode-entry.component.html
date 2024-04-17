@@ -1,0 +1,15 @@
+<div class="well">
+  <h2>Enter a zipcode:</h2>
+  <input type="text" #zipcode placeholder="Zipcode" class="form-control">
+  <br />
+
+  <app-state-button [action]="addLocation">
+    <button default class="btn btn-primary">
+      Add location
+    </button>
+    <button working class="btn btn-warning" disabled><img src="../../assets/icons/loader.gif"
+        alt="working" />Saving...</button>
+    <button done class="btn btn-success"> ✔️ Done</button>
+  </app-state-button>
+
+</div>

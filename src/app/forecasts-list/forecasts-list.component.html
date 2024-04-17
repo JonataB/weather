@@ -1,0 +1,23 @@
+<div>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">5-day forecast for {{forecast?.city?.name}}</h3>
+
+    </div>
+    <ul class="list-group">
+      @for (item of forecast?.list; track $index) {
+      <li class="list-group-item">
+        {{ (item.dt * 1000) | date:'EEEE, MMM d'}}:
+        {{item.weather[0].main}}
+        - Min: {{item.temp.min | number:'.0-0'}}
+        - Max: {{item.temp.max | number:'.0-0'}}
+
+        <img [src]="weatherService.getWeatherIcon(item.weather[0].id)" class="icon">
+      </li>
+      }
+
+    </ul>
+  </div>
+</div>
+<button class="btn btn-success" [routerLink]="'/'">
+  Back to main page</button>

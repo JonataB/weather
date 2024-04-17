@@ -1,0 +1,9 @@
+@if(state ==='default'){
+<ng-content select="[default]"></ng-content>
+}
+@if(state==='working'){
+<ng-content select="[working]" disabled></ng-content>
+}
+@if(state==='done'){
+<ng-content select="[done]"></ng-content>
+}
