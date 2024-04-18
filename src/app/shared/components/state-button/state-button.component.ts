@@ -23,10 +23,12 @@ export class StateButtonComponent<T> {
     this.action().subscribe({
       next: (v: T) => {
         this.state = 'working';
+        console.log(v);
       },
-      error: () => (this.state = 'default'),
+      error: (_error) => (this.state = 'default'),
       complete: () => {
         this.state = 'done';
+        console.log('complete');
         // this.changeDetectorRef.markForCheck();
         setTimeout(() => {
           this.state = 'default';

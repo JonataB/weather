@@ -1,60 +1,69 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, signal, Signal } from '@angular/core';
+import { inject, Injectable, signal, Signal } from '@angular/core';
 import { map, Observable, switchMap, tap, timer } from 'rxjs';
 import { ConditionsAndZip } from '../models/conditions-and-zip.type';
 import { CurrentConditions } from '../models/current-conditions.type';
 import { Forecast } from '../models/forecast.type';
+import { secrets } from './secrets';
 
 @Injectable({
   providedIn: 'root',
 })
 export class WeatherService {
   static readonly URL = 'http://api.openweathermap.org/data/2.5';
-  static readonly APPID = '73e8bf2011e8b721aa8677b4832ca73c'; //'5a4b2d457ecbef9eb2a71e480b947604';
+  static readonly APPID = secrets.apiKey;
   static readonly ICON_URL =
     'https://raw.githubusercontent.com/udacity/Sunshine-Version-2/sunshine_master/app/src/main/res/drawable-hdpi/';
+
   private currentConditions = signal<ConditionsAndZip[]>([]);
 
-  constructor(private http: HttpClient) {}
+  http = inject(HttpClient);
 
-  addCurrentConditions2(zipcode: string) {
-    return timer(0, 30000).pipe(
+  addCurrentConditions(zipcode: string) {
+    return this.getInitialWeather(zipcode).pipe(
+      tap((data) => this.updateCurrentConditions(data))
+    );
+  }
+
+  getInitialWeather(zipcode: string) {
+    return timer(0, 60000).pipe(
       switchMap(() =>
         this.http.get<CurrentConditions>(
           `${WeatherService.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${WeatherService.APPID}`
         )
       ),
-      map((data: CurrentConditions) => ({ zipcode, data })),
-      tap(({ zipcode, data }) => {
-        this.currentConditions.update((conditions: ConditionsAndZip[]) => {
-          const conditionIndex = conditions.findIndex(
-            (cond) => cond.zip === zipcode
-          );
-          if (conditionIndex > -1) {
-            conditions[conditionIndex].data = data;
-          } else {
-            conditions.push({ zip: zipcode, data });
-          }
-          return [...conditions];
-        });
-      })
+      map((data) => ({ zipcode, data }))
     );
   }
 
-  addCurrentConditions(zipcode: string) {
-    return this.http
-      .get<CurrentConditions>(
-        `${WeatherService.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${WeatherService.APPID}`
-      )
-      .pipe(
-        tap((data) =>
-          this.currentConditions.update((conditions) => [
-            ...conditions,
-            { zip: zipcode, data },
-          ])
-        )
+  updateCurrentConditions(data: { zipcode: string; data: CurrentConditions }) {
+    return this.currentConditions.update((conditions: ConditionsAndZip[]) => {
+      const conditionIndex = conditions.findIndex(
+        (cond) => cond.zip === data.zipcode
       );
+      if (conditionIndex > -1) {
+        conditions[conditionIndex].data = data.data;
+      } else {
+        conditions.push({ zip: data.zipcode, data: data.data });
+      }
+      return [...conditions];
+    });
   }
+
+  // addCurrentConditions(zipcode: string) {
+  //   return this.http
+  //     .get<CurrentConditions>(
+  //       `${WeatherService.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${WeatherService.APPID}`
+  //     )
+  //     .pipe(
+  //       tap((data) =>
+  //         this.currentConditions.update((conditions) => [
+  //           ...conditions,
+  //           { zip: zipcode, data },
+  //         ])
+  //       )
+  //     );
+  // }
 
   removeCurrentConditions(zipcode: string) {
     this.currentConditions.update((conditions) => {
