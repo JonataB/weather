@@ -26,14 +26,11 @@ export class WeatherService {
   }
 
   getInitialWeather(zipcode: string) {
-    return timer(0, 60000).pipe(
-      switchMap(() =>
-        this.http.get<CurrentConditions>(
-          `${WeatherService.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${WeatherService.APPID}`
-        )
-      ),
-      map((data) => ({ zipcode, data }))
-    );
+    return this.http
+      .get<CurrentConditions>(
+        `${WeatherService.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${WeatherService.APPID}`
+      )
+      .pipe(map((data) => ({ zipcode, data })));
   }
 
   updateCurrentConditions(data: { zipcode: string; data: CurrentConditions }) {
@@ -49,21 +46,6 @@ export class WeatherService {
       return [...conditions];
     });
   }
-
-  // addCurrentConditions(zipcode: string) {
-  //   return this.http
-  //     .get<CurrentConditions>(
-  //       `${WeatherService.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${WeatherService.APPID}`
-  //     )
-  //     .pipe(
-  //       tap((data) =>
-  //         this.currentConditions.update((conditions) => [
-  //           ...conditions,
-  //           { zip: zipcode, data },
-  //         ])
-  //       )
-  //     );
-  // }
 
   removeCurrentConditions(zipcode: string) {
     this.currentConditions.update((conditions) => {

@@ -11,7 +11,7 @@ import { State } from './button-state.model';
   // changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StateButtonComponent<T> {
-  @Input({ required: true }) action!: () => Observable<T>;
+  @Input({ required: true }) action!: () => Observable<T> | Observable<T>;
   // changeDetectorRef = inject(ChangeDetectorRef);
 
   state: State = 'default';
@@ -20,10 +20,16 @@ export class StateButtonComponent<T> {
   trigger() {
     this.state = 'working';
 
-    this.action().subscribe({
+    let obs$ = undefined;
+    if (this.action instanceof Observable) {
+      obs$ = this.action;
+    } else {
+      obs$ = this.action();
+    }
+
+    obs$.subscribe({
       next: (v: T) => {
         this.state = 'working';
-        console.log(v);
       },
       error: (_error) => (this.state = 'default'),
       complete: () => {
